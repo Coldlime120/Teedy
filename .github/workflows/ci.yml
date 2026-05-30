@@ -1,54 +1,61 @@
-name: Teedy CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
-    branches: [master]
+    branches: [ main, master ]
   pull_request:
-    branches: [master]
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    branches: [ main, master ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
+          java-version: '21'
           distribution: 'temurin'
-          java-version: '11'
-
+          cache: 'maven'
+      
       - name: Build with Maven
         run: mvn clean compile -DskipTests
-
+      
       - name: Run PMD
         run: mvn pmd:pmd
-        continue-on-error: true
-
-      - name: Run Tests
+      
+      - name: Run tests
         run: mvn test
-        continue-on-error: true
-
-      - name: Generate Test Reports
+      
+      - name: Generate test reports
         run: mvn surefire-report:report
-        continue-on-error: true
-
+      
       - name: Generate JavaDoc
-        run: mvn javadoc:javadoc -Dshow=private
-        continue-on-error: true
-
+        run: |
+          mvn javadoc:javadoc \
+            -Dmaven.javadoc.failOnError=false \
+            -Dmaven.javadoc.doclint=none
+      
       - name: Package
         run: mvn package -DskipTests
-
-      - name: Upload Artifacts
+      
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: teedy-artifacts
-          path: |
-            **/target/*.war
-            **/target/*.jar
+          name: teedy-jar
+          path: '**/target/*.jar'
+      
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: '**/target/surefire-reports/*.xml'
+      
+      - name: Upload JavaDoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: '**/target/site/apidocs/**/*.html'
