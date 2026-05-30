@@ -8,6 +8,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   build-and-test:
@@ -51,4 +52,4 @@ jobs:
           path: |
             **/target/*.jar
             **/docs-*/target/*.jar
-          if-no-files-found: warning
+          if-no-files-found: warn
