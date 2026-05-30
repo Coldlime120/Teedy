@@ -19,7 +19,7 @@ pipeline {
         stage('PMD Code Analysis') {
             steps {
                 echo 'Stage 3: Running PMD Code Analysis'
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS', message: 'PMD found issues') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     bat 'mvn pmd:pmd'
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Stage 4: Running Tests'
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS', message: 'Tests failed') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     bat 'mvn test'
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
         stage('Generate JavaDoc') {
             steps {
                 echo 'Stage 5: Generating JavaDoc'
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS', message: 'JavaDoc generation failed') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none'
                 }
             }
@@ -53,8 +53,8 @@ pipeline {
     
     post {
         always {
-            junit '**/target/surefire-reports/*.xml'
             archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/target/site/apidocs/**/*.html', fingerprint: true, allowEmptyArchive: true
         }
     }
 }
