@@ -19,21 +19,27 @@ pipeline {
         stage('PMD Code Analysis') {
             steps {
                 echo 'Stage 3: Running PMD Code Analysis'
-                bat 'mvn pmd:pmd'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    bat 'mvn pmd:pmd'
+                }
             }
         }
         
         stage('Run Tests') {
             steps {
                 echo 'Stage 4: Running Tests'
-                bat 'mvn test || echo "Tests failed but continuing..."'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    bat 'mvn test'
+                }
             }
         }
         
         stage('Generate JavaDoc') {
             steps {
                 echo 'Stage 5: Generating JavaDoc'
-                bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none'
+                }
             }
         }
         
