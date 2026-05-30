@@ -1,11 +1,6 @@
 pipeline {
     agent any
     
-    tools {
-        maven 'Maven-3.8.6'
-        jdk 'JDK-11'
-    }
-    
     stages {
         stage('Checkout Code') {
             steps {
@@ -13,10 +8,6 @@ pipeline {
                 echo 'Stage 1: Checking out source code'
                 echo '========================================='
                 checkout scm
-                script {
-                    def gitCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    echo "Commit: ${gitCommit}"
-                }
             }
         }
         
@@ -25,7 +16,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 2: Building with Maven'
                 echo '========================================='
-                sh 'mvn clean compile -DskipTests'
+                bat 'mvn clean compile -DskipTests'
             }
         }
         
@@ -34,7 +25,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 3: Running PMD Code Analysis'
                 echo '========================================='
-                sh 'mvn pmd:pmd'
+                bat 'mvn pmd:pmd'
             }
         }
         
@@ -43,7 +34,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 4: Running Unit Tests'
                 echo '========================================='
-                sh 'mvn test'
+                bat 'mvn test'
             }
         }
         
@@ -52,7 +43,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 5: Generating Test Reports'
                 echo '========================================='
-                sh 'mvn surefire-report:report'
+                bat 'mvn surefire-report:report'
             }
         }
         
@@ -61,7 +52,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 6: Generating JavaDoc Documentation'
                 echo '========================================='
-                sh 'mvn javadoc:javadoc -Dshow=private'
+                bat 'mvn javadoc:javadoc -Dshow=private'
             }
         }
         
@@ -70,8 +61,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 7: Packaging Application'
                 echo '========================================='
-                sh 'mvn package -DskipTests'
-                archiveArtifacts artifacts: '**/target/*.war,**/target/*.jar', fingerprint: true
+                bat 'mvn package -DskipTests'
             }
         }
     }
