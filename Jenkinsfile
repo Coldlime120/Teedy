@@ -36,33 +36,41 @@ pipeline {
             }
         }
         
-        // 阶段4：生成测试报告
+        // 阶段4：运行测试（先生成测试结果）
+        stage('Run Tests') {
+            steps {
+                echo '========================================='
+                echo 'Stage 4: Running Tests'
+                echo '========================================='
+                bat 'mvn test'
+            }
+        }
+        
+        // 阶段5：生成测试报告（修正：分开执行）
         stage('Generate Test Reports') {
             steps {
                 echo '========================================='
-                echo 'Stage 4: Generating Test Reports'
+                echo 'Stage 5: Generating Test Reports'
                 echo '========================================='
-                // 注意：这里不再跳过测试
-                bat 'mvn surefire-report:report'
+                bat 'mvn surefire-report:report -pl docs-core,docs-web-commons,docs-web'
             }
         }
         
-        // 阶段5：生成 JavaDoc（修复版本）
+        // 阶段6：生成 JavaDoc（修正：针对所有模块）
         stage('Generate JavaDoc') {
             steps {
                 echo '========================================='
-                echo 'Stage 5: Generating JavaDoc Documentation'
+                echo 'Stage 6: Generating JavaDoc Documentation'
                 echo '========================================='
-                // 添加 JDK 21 兼容性参数
-                bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none'
+                bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none -pl docs-core,docs-web-commons,docs-web'
             }
         }
         
-        // 阶段6：打包应用
+        // 阶段7：打包应用
         stage('Package Application') {
             steps {
                 echo '========================================='
-                echo 'Stage 6: Packaging Application'
+                echo 'Stage 7: Packaging Application'
                 echo '========================================='
                 bat 'mvn package -DskipTests'
             }
@@ -75,26 +83,33 @@ pipeline {
             echo 'Post-build: Archiving artifacts'
             echo '========================================='
             
-            // 归档 JAR 文件
+            // 归档 JAR 文件（多个模块可能有多个 JAR）
             archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/docs-*/target/*.jar', fingerprint: true, allowEmptyArchive: true
             
-            // 归档测试报告
-            archiveArtifacts artifacts: '**/target/site/surefire-report.html', fingerprint: true, allowEmptyArchive: true
-            archiveArtifacts artifacts: '**/docs-core/target/site/surefire-report.html', fingerprint: true, allowEmptyArchive: true
-            
-            // 归档 JavaDoc
-            archiveArtifacts artifacts: '**/target/site/apidocs/**/*.html', fingerprint: true, allowEmptyArchive: true
-            archiveArtifacts artifacts: '**/docs-core/target/site/apidocs/**/*.html', fingerprint: true, allowEmptyArchive: true
+            // 归档测试结果 XML（使用正确的路径模式）
+            archiveArtifacts artifacts: '**/target/surefire-reports/*.xml', fingerprint: true, allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/docs-*/target/surefire-reports/*.xml', fingerprint: true, allowEmptyArchive: true
             
             // 发布测试结果
             junit '**/target/surefire-reports/*.xml'
-            junit '**/docs-core/target/surefire-reports/*.xml'
+            junit '**/docs-*/target/surefire-reports/*.xml'
+            
+            // 归档 PMD 报告（如果生成的话）
+            archiveArtifacts artifacts: '**/target/site/pmd.html', fingerprint: true, allowEmptyArchive: true
         }
         
         success {
             echo '========================================='
             echo '✓ Build completed successfully!'
             echo '✓ All artifacts have been archived'
+            echo '========================================='
+        }
+        
+        unstable {
+            echo '========================================='
+            echo '⚠ Build completed but with warnings!'
+            echo '⚠ Please check the artifact archives'
             echo '========================================='
         }
         
