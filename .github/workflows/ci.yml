@@ -28,11 +28,11 @@ jobs:
         run: mvn clean compile -DskipTests
 
       - name: Run PMD
-        run: mvn pmd:pmd || true
+        run: mvn pmd:pmd
         continue-on-error: true
 
       - name: Run Tests
-        run: mvn test || true
+        run: mvn test
         continue-on-error: true
 
       - name: Package
@@ -42,7 +42,7 @@ jobs:
         run: |
           mvn javadoc:javadoc \
             -Dmaven.javadoc.failOnError=false \
-            -Dmaven.javadoc.doclint=none || true
+            -Dmaven.javadoc.doclint=none
         continue-on-error: true
 
       - name: Upload Artifacts
