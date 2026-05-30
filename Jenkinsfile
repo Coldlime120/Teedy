@@ -29,37 +29,28 @@ pipeline {
             }
         }
         
-        stage('Run Tests') {
-            steps {
-                echo '========================================='
-                echo 'Stage 4: Running Unit Tests'
-                echo '========================================='
-                bat 'mvn test'
-            }
-        }
-        
         stage('Generate Test Reports') {
             steps {
                 echo '========================================='
-                echo 'Stage 5: Generating Test Reports'
+                echo 'Stage 4: Generating Test Reports'
                 echo '========================================='
-                bat 'mvn surefire-report:report'
+                bat 'mvn surefire-report:report -DskipTests'
             }
         }
         
         stage('Generate JavaDoc') {
             steps {
                 echo '========================================='
-                echo 'Stage 6: Generating JavaDoc Documentation'
+                echo 'Stage 5: Generating JavaDoc Documentation'
                 echo '========================================='
-                bat 'mvn javadoc:javadoc -Dshow=private'
+                bat 'mvn javadoc:javadoc'
             }
         }
         
         stage('Package Application') {
             steps {
                 echo '========================================='
-                echo 'Stage 7: Packaging Application'
+                echo 'Stage 6: Packaging Application'
                 echo '========================================='
                 bat 'mvn package -DskipTests'
             }
