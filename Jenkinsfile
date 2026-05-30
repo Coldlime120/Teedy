@@ -16,7 +16,7 @@ pipeline {
                 echo '========================================='
                 echo 'Stage 2: Building with Maven'
                 echo '========================================='
-                bat 'mvn clean compile -DskipTests'
+                bat 'mvn clean install -DskipTests'
             }
         }
         
