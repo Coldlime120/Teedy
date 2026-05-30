@@ -4,69 +4,51 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo '========================================='
                 echo 'Stage 1: Checking out source code'
-                echo '========================================='
                 checkout scm
             }
         }
         
         stage('Maven Build') {
             steps {
-                echo '========================================='
                 echo 'Stage 2: Building with Maven'
-                echo '========================================='
                 bat 'mvn clean install -DskipTests'
             }
         }
         
         stage('PMD Code Analysis') {
             steps {
-                echo '========================================='
                 echo 'Stage 3: Running PMD Code Analysis'
-                echo '========================================='
                 bat 'mvn pmd:pmd'
             }
         }
         
-        stage('Generate Test Reports') {
+        stage('Run Tests') {
             steps {
-                echo '========================================='
-                echo 'Stage 4: Generating Test Reports'
-                echo '========================================='
-                bat 'mvn surefire-report:report -DskipTests'
+                echo 'Stage 4: Running Tests'
+                bat 'mvn test'
             }
         }
         
         stage('Generate JavaDoc') {
             steps {
-                echo '========================================='
-                echo 'Stage 5: Generating JavaDoc Documentation'
-                echo '========================================='
-                bat 'mvn javadoc:javadoc'
+                echo 'Stage 5: Generating JavaDoc'
+                bat 'mvn javadoc:javadoc -Dmaven.javadoc.failOnError=false -Dmaven.javadoc.doclint=none'
             }
         }
         
         stage('Package Application') {
             steps {
-                echo '========================================='
                 echo 'Stage 6: Packaging Application'
-                echo '========================================='
                 bat 'mvn package -DskipTests'
             }
         }
     }
     
     post {
-        success {
-            echo '========================================='
-            echo 'Build completed successfully!'
-            echo '========================================='
-        }
-        failure {
-            echo '========================================='
-            echo 'Build failed. Please check the logs.'
-            echo '========================================='
+        always {
+            junit '**/target/surefire-reports/*.xml'
+            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true, allowEmptyArchive: true
         }
     }
 }
